@@ -17,7 +17,7 @@ class Controller:
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.kwargs = kwargs
-        if isinstance(controllerClass, basestring):
+        if isinstance(controllerClass, str):
             self.controller = torch.load(controllerClass)
         else:
             self.controller = controllerClass(input_size, output_size, hidden_size, num_layers, **kwargs)
@@ -103,7 +103,9 @@ def rollout_batch(model, controller, architecture, dataset, N, e, acc_constraint
             newModels.append(newModel)
             studentModels.append(newModel)
             idxs.append(i)
-    accs = trainNormalParallel(studentModels, dataset, epochs=5) if architecture.datasetName is 'caltech256' else trainTeacherStudentParallel(model, studentModels, dataset, epochs=5)
+    
+
+    accs = trainNormalParallel(studentModels, dataset, epochs=5) if architecture.datasetName == 'caltech256' else trainTeacherStudentParallel(model, studentModels, dataset, epochs=5)
     for acc in accs:
         print('Val accuracy: %f' % acc)
     for i in range(len(newModels)):

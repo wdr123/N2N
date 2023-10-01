@@ -1,4 +1,9 @@
 *.pyc
 parent_models/*
-*.pyc
+**/__pycache__
 .DS_Store
+cifar-10-batches-py
+**/controllers_*
+studentModels
+teacherModels
+*.tar.gz

@@ -221,12 +221,13 @@ class Architecture:
             mm.fixed = [True]*5
         m.layers._modules.values()[0].fixed = [True, True, True, False, True]
         #m._modules.values()[-2].fixed = [True, True, True, False, True]
-    
+
+         
     def fixParams(self, m):
         layers = flattenModule(m)
         # Initialize
         for l in layers:
-            l.fixed = [False]*5
+            l.fixed =[False]*5
 
         # Fix any layers you want here
         # ----

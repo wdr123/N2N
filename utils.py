@@ -11,7 +11,7 @@ from model.lenet import *
 def resizeLayer(layer, in_channels, out_channels, kernel_size=1, stride=1, padding=1, dilation=1):
     if dilation == 1 and hasattr(layer, 'dilation'):
         dilation = layer.dilation
-    if layer.__class__.__name__ is 'Conv2d':
+    if layer.__class__.__name__ == 'Conv2d':
         kernel_size = (kernel_size, kernel_size) if type(kernel_size) is not tuple else kernel_size
         stride = (stride, stride) if type(stride) is not tuple else stride
         padding = (padding, padding) if type(padding) is not tuple else padding
@@ -24,21 +24,26 @@ def resizeLayer(layer, in_channels, out_channels, kernel_size=1, stride=1, paddi
         else:
             layer = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, bias=False)
         layer.load_state_dict(sd)
-    if layer.__class__.__name__ is 'MaxPool2d':
+    if layer.__class__.__name__ == 'MaxPool2d':
         layer = nn.MaxPool2d(kernel_size, stride=stride, dilation=dilation)
-    if layer.__class__.__name__ is 'Linear':
+    if layer.__class__.__name__ == 'Linear':
         sd = layer.state_dict()
         sd['weight'].resize_(out_channels, in_channels)
         sd['bias'].resize_(out_channels)
         layer = nn.Linear(in_channels, out_channels)
         layer.load_state_dict(sd)
-    if layer.__class__.__name__ is 'ReLU':
+    if layer.__class__.__name__ == 'ReLU':
         layer = nn.ReLU(inplace=False)
-    if layer.__class__.__name__ is 'BatchNorm2d':
+    if layer.__class__.__name__ == 'BatchNorm2d':
         sd = layer.state_dict()
         for k in sd:
-            sd[k].resize_(in_channels)
-        layer = nn.BatchNorm2d(in_channels, eps=layer.eps, momentum=layer.momentum, affine=layer.affine)
+            if k != 'num_batches_tracked':
+                sd[k].resize_(in_channels)
+            # sd['num_batches_tracked'] = torch.tensor([0]*in_channels)
+        if not layer.__dict__.get('track_running_stats'):
+            layer = nn.BatchNorm2d(in_channels, eps=layer.eps, momentum=layer.momentum, affine=layer.affine, track_running_stats=False)
+        else:
+            layer = nn.BatchNorm2d(in_channels, eps=layer.eps, momentum=layer.momentum, affine=layer.affine)
         layer.load_state_dict(sd)
     return layer
 
@@ -281,6 +286,18 @@ def resetModel(m):
     for i in m._modules.values():
         resetModel(i)
 
+def versionCorrector(m):
+    if len(m._modules) == 0 and hasattr(m, 'reset_parameters'):
+        if m.__class__.__name__ == 'BatchNorm2d':
+            if 'running_mean' in m.state_dict():
+                m.__dict__['track_running_stats'] = True
+                m._buffers['num_batches_tracked'] = torch.tensor(0)
+            else:
+                m.__dict__['track_running_stats'] = False
+        return
+    for i in m._modules.values():
+        versionCorrector(i)
+        
 '''
 def resetModel(model):
     for l in model.features._modules.values():
@@ -296,14 +313,14 @@ def resetModel(model):
 
 import Layer
 def resizeToFit(layer, inp):
-    if layer._layer.__class__.__name__ is 'Linear':
+    if layer._layer.__class__.__name__ == 'Linear':
         in_channels = inp.view(inp.size(0), -1).size(1)
         return resizeLayer(layer._layer, in_channels, layer._layer.out_features)
     in_channels = inp.size(1)
     if 'weight' in layer._layer._parameters:
         _, kernel_size, stride, out_channels, padding = layer.getRepresentation()
         return resizeLayer(layer._layer, in_channels, out_channels, kernel_size, stride, padding)
-    if layer._layer.__class__.__name__ is 'ReLU':
+    if layer._layer.__class__.__name__ == 'ReLU':
         return nn.ReLU(inplace=False)
     return layer._layer
 

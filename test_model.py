@@ -1,6 +1,8 @@
 import torch
 import argparse
 import warnings
+from torch import nn
+
 warnings.filterwarnings('ignore')
 with warnings.catch_warnings():
     warnings.simplefilter('ignore')
@@ -34,7 +36,8 @@ else:
     quit()
 
 
-model = torch.load(args.model)
+model = torch.load(args.model, 'cuda:0')
+model.avgpool = nn.AvgPool2d(kernel_size=4)
 dataset.net = model.cuda() if args.cuda else model
 
 acc = dataset.test()

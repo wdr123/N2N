@@ -95,20 +95,22 @@ def train(epoch):
         # train the network
         optimizer.zero_grad()
         scores = net.forward(data)
+        scores = F.log_softmax(scores, dim=1)
         loss = F.nll_loss(scores, targets)
 
         # compute the accuracy
         pred = scores.data.max(1)[1] # get the index of the max log-probability
         correct += pred.eq(targets.data).cpu().sum()
 
-        avg_loss.append(loss.data[0])
+        
+        avg_loss.append(loss.data)
         loss.backward()
         optimizer.step()
 
         if b_idx % log_schedule == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, (b_idx+1) * len(data), len(train_loader.dataset),
-                100. * (b_idx+1)*len(data) / len(train_loader.dataset), loss.data[0]))
+                100. * (b_idx+1)*len(data) / len(train_loader.dataset), loss.data))
 
     # now that the epoch is completed plot the accuracy
     train_accuracy = correct / float(len(train_loader.dataset))

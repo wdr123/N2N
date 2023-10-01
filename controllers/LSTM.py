@@ -12,7 +12,7 @@ class LSTM(nn.Module):
         output = output.squeeze(1)
         output = self.Wt_softmax(output)
         probs = self.softmax(output)
-        actions = probs.multinomial()
+        actions = probs.multinomial(num_samples=1)
         return actions
     
     def reset_parameters(self):

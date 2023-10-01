@@ -19,7 +19,7 @@ class BasicBlockModifiable(nn.Module):
         y = self.layers(x)
         if self.shortcut:
             residual = self.shortcut(x)
-        y += residual
+        y = y + residual
         y = F.relu(y)
         return y
     
@@ -40,6 +40,15 @@ class ResNetModifiable(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
+        # layer4 = self._modules['layer4']
+        # block0 = layer4._modules['0']
+        # block1 = layer4._modules['1']
+        # x = block0(x)
+        
+        # for layer in block1._modules['layers']._modules.values():
+        #     x = layer(x)
+        #     h = x.register_hook(lambda grad: print(grad.shape))
+
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         x = self.linear(x)
@@ -58,7 +67,7 @@ class BasicBlock(nn.Module):
         self.layers = nn.Sequential(
             conv3x3(in_planes, planes, stride),
             nn.BatchNorm2d(planes),
-            nn.ReLU(True),
+            nn.ReLu(True),
             conv3x3(planes, planes),
             nn.BatchNorm2d(planes),
         )
@@ -82,10 +91,10 @@ class Bottleneck(nn.Module):
         self.layers = nn.Sequential(
             nn.Conv2d(in_planes, planes, kernel_size=1, bias=False),
             nn.BatchNorm2d(planes),
-            nn.ReLU(True),
+            nn.ReLu(True),
             nn.Conv2d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False),
             nn.BatchNorm2d(planes),
-            nn.ReLU(True),
+            nn.ReLu(True),
             nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False),
             nn.BatchNorm2d(planes * 4),
         )
@@ -108,7 +117,7 @@ class ResNet(nn.Module):
         self.pre_layers = nn.Sequential(
             conv3x3(3,64),
             nn.BatchNorm2d(64),
-            nn.ReLU(True),
+            nn.ReLu(True),
         )
         self.layer1 = self._make_layer(block, 64, nblocks[0])
         self.layer2 = self._make_layer(block, 128, nblocks[1], stride=2)
