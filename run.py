@@ -69,7 +69,7 @@ baseline_acc = None
 
 # ----MODELS----
 # Load teacherModel
-teacherModel = torch.load(args.teacherModel, 'cuda:0')
+teacherModel = torch.load(args.teacherModel)
 versionCorrector(teacherModel)
 # Load baseModel (if available)
 model = torch.load(args.model) if args.model else deepcopy(teacherModel)
@@ -77,9 +77,6 @@ model = torch.load(args.model) if args.model else deepcopy(teacherModel)
 model.avgpool = nn.AvgPool2d(kernel_size=4).cuda()
     
 
-
-
-torch.autograd.set_detect_anomaly(True)
 
 # ----PATHS----
 # Define save paths
