@@ -26,15 +26,21 @@ class Controller:
         self.actionSeqs = []
 
     def update_controller(self, avgR, b):
-        for actions in self.actionSeqs:
+        for actions, actions_probs in self.actionSeqs:
             if isinstance(actions, list):
-                for action in actions:
-                    action.reinforce(avgR - b)
+                for action, actions_probs in actions:
+                    # action.reinforce(avgR - b)
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step()
             else:
-                actions.reinforce(avgR - b)
-            self.optimizer.zero_grad()
-            autograd.backward(actions, [None for _ in actions])
-            self.optimizer.step()
+                # actions.reinforce(avgR - b)
+                loss = -torch.mean(actions_probs) * (avgR - b).detach()
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+            # autograd.backward(actions, [None for _ in actions])
+            
         self.actionSeqs = []
 
     def rolloutActions(self, layers):
@@ -47,8 +53,8 @@ class Controller:
         input = Variable(torch.Tensor(len(layers), 1, num_input))
         for i in range(len(layers)):
             input[i] = Layer(layers[i]).toTorchTensor(skipSupport=self.skipSupport)
-        actions = self.controller(input, (hn, cn))
-        self.actionSeqs.append(actions)
+        actions, actions_probs = self.controller(input, (hn, cn))
+        self.actionSeqs.append((actions, actions_probs))
         return actions
 
 

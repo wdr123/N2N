@@ -136,7 +136,8 @@ numSavedModels = 0
 R_sum = 0
 b = 0
 
-epochs = 100
+# epochs = 100
+epochs = 2
 N = 5 
 prevRs = [0] * N
 if args.controller:

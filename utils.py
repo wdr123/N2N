@@ -377,5 +377,7 @@ def layersFromModule(m):
 
 
 def saveModels(epoch, models, modelSavePath):
+    if not os.path.exists(modelSavePath):
+        os.makedirs(modelSavePath)
     for i in range(len(models)):
         torch.save(models[i], os.path.join(modelSavePath, '%f_%f.net' %(epoch, i)))

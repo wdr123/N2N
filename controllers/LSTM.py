@@ -1,4 +1,5 @@
 from torch import nn
+import torch
 
 class LSTM(nn.Module):
     def __init__(self, input_size, output_size, hidden_size, num_layers, bidirectional=True):
@@ -13,7 +14,10 @@ class LSTM(nn.Module):
         output = self.Wt_softmax(output)
         probs = self.softmax(output)
         actions = probs.multinomial(num_samples=1)
-        return actions
+        actions = actions.detach()
+        actions_probs = torch.gather(probs, dim=1, index=actions)
+        print(actions_probs.shape)
+        return actions, actions_probs
     
     def reset_parameters(self):
         self.lstm.reset_parameters()

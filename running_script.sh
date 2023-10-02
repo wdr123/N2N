@@ -6,11 +6,11 @@
 #SBATCH -A vision -p tier3 -n 4
 #SBATCH -c 2
 #SBATCH --mem=16g
-#SBATCH --gres=gpu:a100:2
+#SBATCH --gres=gpu:a100:1
 
 conda activate N2N
 
-
+python run.py removal cifar10 teacherModels/resnet18_cifar10.net --cuda True 
 # if [[ $first = "no_attention" ]]; then
 #       python RAM_ASD_TD_train_test.py --latent $latent --model no_attention --seed $seed --split $split --gl $gl
 #   elif [[ $first = "attention_only" ]]; then
