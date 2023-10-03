@@ -10,13 +10,13 @@ class LSTM(nn.Module):
         
     def forward(self, input, hx):
         output, hx = self.lstm(input, hx)
+        # output.register_hook(lambda grad: print(grad.shape))
         output = output.squeeze(1)
         output = self.Wt_softmax(output)
         probs = self.softmax(output)
         actions = probs.multinomial(num_samples=1)
         actions = actions.detach()
         actions_probs = torch.gather(probs, dim=1, index=actions)
-        print(actions_probs.shape)
         return actions, actions_probs
     
     def reset_parameters(self):

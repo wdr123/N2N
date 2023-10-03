@@ -26,6 +26,7 @@ class Controller:
         self.actionSeqs = []
 
     def update_controller(self, avgR, b):
+        loss = 0
         for actions, actions_probs in self.actionSeqs:
             if isinstance(actions, list):
                 for action, actions_probs in actions:
@@ -35,13 +36,14 @@ class Controller:
                     self.optimizer.step()
             else:
                 # actions.reinforce(avgR - b)
-                loss = -torch.mean(actions_probs) * (avgR - b).detach()
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
+                loss += -torch.mean(actions_probs) * (avgR - b)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
             # autograd.backward(actions, [None for _ in actions])
             
         self.actionSeqs = []
+        loss = 0
 
     def rolloutActions(self, layers):
         num_input  = self.input_size

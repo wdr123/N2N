@@ -80,7 +80,7 @@ model.avgpool = nn.AvgPool2d(kernel_size=4).cuda()
 
 # ----PATHS----
 # Define save paths
-controllerSavePath = './controllers_%s/' % args.dataset
+controllerSavePath = './controllers_%s' % args.dataset
 if not os.path.exists(controllerSavePath):
     os.mkdir(controllerSavePath)
 modelSavePath = './models_%s' % args.dataset
@@ -136,8 +136,7 @@ numSavedModels = 0
 R_sum = 0
 b = 0
 
-# epochs = 100
-epochs = 2
+epochs = 100
 N = 5 
 prevRs = [0] * N
 if args.controller:
@@ -160,6 +159,6 @@ for e in range(epochs):
     print('Reinforcing for epoch %d' % e)
     controller.update_controller(avgR, b)
 
-torch.save(controller, controllerSavePath)
+torch.save(controller, os.path.join(controllerSavePath, 'controller.net'))
 resultsFile = open(os.path.join(modelSavePath, 'results.txt'), "w")
 output_results(resultsFile, accsPerModel, paramsPerModel, rewardsPerModel)

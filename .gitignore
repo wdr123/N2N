@@ -7,3 +7,4 @@ cifar-10-batches-py
 studentModels
 teacherModels
 *.tar.gz
+models_*/
